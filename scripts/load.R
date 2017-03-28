@@ -4,11 +4,28 @@ info(log,'Loading machine learning model')
 load('data/model.rda')
 
 # Load cpls configuration
-config <- 'store/config.R'
-reqFile(config)
+globalconfig <- 'store/config.rda'
+reqFile(globalconfig)
+scheduledtimes <- 'store/startTimes.rda'
+reqFile(scheduledtimes)
+
 info(log,'Importing configuration')
-source(config)
+
+load(globalconfig)
+load(scheduledtimes)
+
+maxNoteCount <- config$maxNoteCount
+numNotesThresh <- config$numNotesThresh
+mailFrom <- config$mailFrom
+host <- config$mailHost
+port <- config$mailPort
+userName <- config$mailUserName
+userPasswd <- config$mailPassword
+ssl <- config$mailSSL
+
 checkConfig()
+
+
 
 # Error if user name is not updated (indication that config.R not updated correctly)
 if(userName=='user@domain.com') {
@@ -50,4 +67,4 @@ if (length(users)==0) {
   err('No user accounts configured')
 }
 
-checkSums <- md5sum(sort(c(files,config)))
+checkSums <- md5sum(sort(c(files,globalconfig,scheduledtimes)))
