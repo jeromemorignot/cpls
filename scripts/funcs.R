@@ -32,7 +32,38 @@ reqFile <- function(file) {
   }
 }
 
+#Is cpls Running
+cplsRunning <- function(){
+  processfile='/home/user/cpls/store/cpls.proc'
+  if (file.exists(processfile)){
+    fileConn<-file(processfile)
+    PID <- readLines(fileConn)
+    close(fileConn)
+    options(warn = 1)
+    checkedPID <- system(paste("ps --pid ", PID, "| awk '{print $1}' | grep -v PID",sep=''),intern = TRUE)
+    options(warn = 2)
+    if(length(checkedPID)>0){
+      return(TRUE)
+    }else{
+      return(FALSE)
+    }
+  }else{
+    return(FALSE)
+  }
+  
+}
 
+#get cpls process ID
+getcplsPID <- function(){
+  if(cplsRunning()){
+    processfile='/home/user/cpls/store/cpls.proc'
+    if (file.exists(processfile)){
+      fileConn<-file(processfile)
+      PID <- readLines(fileConn)
+      close(fileConn) }
+    return(PID)
+  }else{return(0)}
+}
 # Function for getURL error handling
 gURL <- function(url,token) {
   res <- tryCatch(getURL(url,

@@ -15,7 +15,7 @@ library(xgboost)
 library(caret)
 
 # Turn warnings into errors
-options(warn=2)
+options(warn = 2)
 
 # Function to set home directory
 defaultDir = '/home/user/cpls'
@@ -98,6 +98,23 @@ if(!is.na(args[1])) {
 ##########################
 info(log,paste('Operation Mode:',opMode))
 
+# Is there an existing process running
+if (opMode == 'schedule'){
+info(log,'---------------------------------------------------')
+info(log,'Testing if CPLS is already running')
+if(cplsRunning()){
+  info(log,'CPLS is already running - stopping second execution')
+  info(log,'---------------------------------------------------')
+  q()
+} else {
+    info(log,'CPLS is not running - starting it')
+    info(log,'---------------------------------------------------')
+    processfile='/home/user/cpls/store/cpls.proc'
+    fileConn<-file(processfile)
+    writeLines(paste(Sys.getpid()), fileConn)
+    close(fileConn)
+  }
+}
 # Create directories if they don't exist
 dir.create('store', showWarnings = FALSE)
 dir.create('tmp', showWarnings = FALSE)
@@ -119,7 +136,12 @@ if(opMode=='schedule') {
 # Start continous loop
 showWait=T
 while (1) {
-  
+  if(file.exists('store/killcpls.proc')){
+  info(log,'Stop request received. Stopping ...')  
+  system('rm -f /home/user/cpls/store/cpls.proc')
+  system('rm -f /home/user/cpls/store/killcpls.proc')
+  q()
+  }
   # Show waiting status once when waiting
   if(opMode=='schedule') {
     if(showWait) {
