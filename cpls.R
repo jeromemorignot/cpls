@@ -500,7 +500,7 @@ while (1) {
     Sys.sleep(5)
     
     # Load configuration if checksums are different or new number of accounts
-    if (any(md5sum(sort(c(files,globalconfig,scheduledtimes)))!=checkSums) | length(files) != length(list.files(path="store", pattern="*.acc", full.names=T, recursive=FALSE))) {
+    if (any(md5sum(sort(c(useraccounts,globalconfig,scheduledtimes)))!=checkSums)) {
       info(log,'Configuration change detected.  Reloading ...')
       source('scripts/load.R')
       # Show start times if opMode is schedule

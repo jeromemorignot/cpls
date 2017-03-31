@@ -36,35 +36,53 @@ if(userName=='user@domain.com') {
 info(log,'Loading user accounts')
 users <- list()
 ls <- read.csv('data/loans_sample.csv')
-files <- sort(list.files(path="store", pattern="*.acc", full.names=T, recursive=FALSE))
-for (file in files) {
+#files <- sort(list.files(path="store", pattern="*.acc", full.names=T, recursive=FALSE))
+useraccounts <- 'store/users.rda'
+load(useraccounts)
+
+#for (file in files) {
 
   # Error if default user file exists
-  if (grepl("user_name.acc",file)) {
-    err('Default file "store/user_name.acc" exists')
-  }
+#  if (grepl("user_name.acc",file)) {
+#    err('Default file "store/user_name.acc" exists')
+#  }
   
-  lc=list()
-  source(file)
-  checkUser(file,lc)
+#  lc=list()
+#  source(file)
+#  checkUser(file,lc)
   
   # Check filter syntax
-  res <- tryCatch({
-    ls %>% lc$filterCriteria()
-  }, error = function(e) {
-    err(paste('User (',lc$name,') - Filter error',sep=''))
-  })
+#  res <- tryCatch({
+#    ls %>% lc$filterCriteria()
+#  }, error = function(e) {
+#    err(paste('User (',lc$name,') - Filter error',sep=''))
+#  })
   
   # Error if name is not configured (inidication that file was not updated)
-  if (lc$name == "FirstName LastName") {
-    err(paste('User name not configured in file:',file))
-  }
+#  if (lc$name == "FirstName LastName") {
+#    err(paste('User name not configured in file:',file))
+#  }
   
-  users <- append(users,list(lc))
-  info(log,paste("Importing user: ",lc$name,sep=''))
+#  users <- append(users,list(lc))
+#  info(log,paste("Importing user: ",lc$name,sep=''))
+#}
+for(userid in 1:length(users)){
+  
+  #Check Filter Criteria
+  tmpfilter <- unlist(lapply(1:1,function (i) { paste0('UserFilter <- function (x) {filter(x,',users[[userid]]$filterCriteria,')}')}))
+  write(tmpfilter,file = 'tmp/tmpfilter.R')
+  source('tmp/tmpfilter.R')
+  
+  res <- tryCatch({
+       ls %>% UserFilter()
+      }, error = function(e) {
+        err(paste('User (',users[[userid]]$name,') - Filter error',sep=''))
+      })
+  users[[userid]]$filterCriteria <- UserFilter
+  info(log,paste("Importing user: ",users[[userid]]$name,sep=''))
 }
 if (length(users)==0) {
   err('No user accounts configured')
 }
 
-checkSums <- md5sum(sort(c(files,globalconfig,scheduledtimes)))
+checkSums <- md5sum(sort(c(useraccounts,globalconfig,scheduledtimes)))
