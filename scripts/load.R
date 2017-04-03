@@ -80,6 +80,7 @@ for(userid in 1:length(users)){
       })
   users[[userid]]$filterCriteria <- UserFilter
   info(log,paste("Importing user: ",users[[userid]]$name,sep=''))
+  if(users[[userid]]$portfolioId == "NA") users[[userid]]$portfolioId = FALSE
 }
 if (length(users)==0) {
   err('No user accounts configured')

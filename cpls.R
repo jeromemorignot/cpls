@@ -193,6 +193,7 @@ while (1) {
       loans <- read.csv('data/loans_sample.csv')
       loans$initialListStatus <- as.factor(ifelse(loans$initialListStatus==FALSE,'F','T'))
     } else if (opMode == 'model' | opMode == 'runOnce') {
+      listTime=with_tz(now(),"America/Los_Angeles")
       newJson <- gURL(urlLoanListAll,users[[i]]$token)
       loans = fromJSON(newJson)$loans
     }
@@ -220,7 +221,7 @@ while (1) {
     loans$amountTerm <- loans$loanAmount/loans$term
     loans$amountTermIncomeRatio=ifelse(loans$annualInc!=0,loans$amountTerm/(loans$annualInc/12),NA)
     loans$revolBalAnnualIncRatio=ifelse(loans$annualInc!=0,loans$revolBal/loans$annualInc,NA)
-
+    
     # Add model probability to each loan  
     newdata=rbind(featureDF,loans[,featureNames])[-1,]
     matrix=predict(dmy, newdata)
@@ -473,6 +474,7 @@ while (1) {
     # Save all loans to archive
     if (file.exists(archive)) {
       load(archive)
+      info(log,paste('Archiving Loans into DB',sep=""))
       loanArchive <- rbind(loans,loanArchive)
       save(loanArchive, file=archive)
     } else {

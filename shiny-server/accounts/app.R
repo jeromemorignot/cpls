@@ -10,7 +10,11 @@
 library(shiny)
 library(shinyBS)
 library(gtools)
+library(shinyjs)
 
+options(shiny.autoreload = TRUE)
+
+jsResetCode <- "shinyjs.reset = function() {history.go(0)}" # Define the js method that resets the page
 # Function to set home directory
 defaultDir = '/home/user/cpls'
 csf <- function() {
@@ -71,9 +75,12 @@ help <- function() {
 
 buttonSaveValue <- 0
 buttonAddValue <- 0
+buttonRemoveValue <- 0
 
 load('/home/user/cpls/store/users.rda')
 load('/home/user/cpls/store/fields.rda')
+
+
 
 inputTextarea <- function(inputId, value="", nrows, ncols) {
   tagList(
@@ -87,64 +94,66 @@ inputTextarea <- function(inputId, value="", nrows, ncols) {
 }
 
 ui <- fluidPage(
+  useShinyjs(),                                           # Include shinyjs in the UI
+  extendShinyjs(text = jsResetCode),                      # Add the js code to the page
   wellPanel(
   fluidRow(
     lapply(1:length(users), function(i) {
-      column(2,
+      column(4,
              textInput(paste0('name', i), paste0('User #', i),
                        ifelse(length(users[[i]]$name)>0,users[[i]]$name,'FirstName LastName'))
       )})),
   fluidRow(
     lapply(1:length(users), function(i) {
-      column(2,
+      column(4,
              textInput(paste0('email', i), paste0('Email #', i),
                        ifelse(length(users[[i]]$email)>0,users[[i]]$email,'user@domain.com'))
       )})),
   fluidRow(
     lapply(1:length(users), function(i) {
-      column(2,
+      column(4,
              textInput(paste0('accID', i), paste0('Account #', i),
                        ifelse(length(users[[i]]$accID)>0,users[[i]]$accID,'12345678'))
       )})),
   fluidRow(
     lapply(1:length(users), function(i) {
-      column(2,
+      column(4,
              textInput(paste0('token', i), paste0('Token #', i),
                        ifelse(length(users[[i]]$token)>0,users[[i]]$token,'xxxxxxxxxxxxxxxxxxxxxxxxx'))
       )})),
   fluidRow(
     lapply(1:length(users), function(i) {
-      column(2,
+      column(4,
              numericInput(paste0('maxNotesPerOrder', i), paste0('Maximum Number of Notes per Order #', i),
-                       ifelse(length(users[[i]]$maxNotesPerOrder)>0,users[[i]]$maxNotesPerOrder,5))
+                       ifelse(length(users[[i]]$maxNotesPerOrder)>0,users[[i]]$maxNotesPerOrder,5),min = 0)
       )})),
   fluidRow(
     lapply(1:length(users), function(i) {
-      column(2,
+      column(4,
              numericInput(paste0('minCash', i), paste0('Minimum Cash Level #', i),
-                          ifelse(length(users[[i]]$minCash)>0,users[[i]]$minCash,0))
+                          ifelse(length(users[[i]]$minCash)>0,users[[i]]$minCash,0),min = 0)
       )})),
   fluidRow(
     lapply(1:length(users), function(i) {
-      column(2,
+      column(4,
              numericInput(paste0('portfolioId', i), paste0('Portfolio Id #', i),
                           ifelse(length(users[[i]]$portfolioId)>0,users[[i]]$portfolioId,0))
       )})),
   fluidRow(
     lapply(1:length(users), function(i) {
-      column(2,
+      column(4,
              numericInput(paste0('amountPerNote', i), paste0('Amount Per Note #', i),
-                          ifelse(length(users[[i]]$amountPerNote)>0,users[[i]]$amountPerNote,25))
+                          ifelse(length(users[[i]]$amountPerNote)>0,users[[i]]$amountPerNote,25),step = 25,min = 25)
       )})),
   fluidRow(
     lapply(1:length(users), function(i) {
-      column(2,
+      column(4,
              selectInput(paste0('sortField', i), paste0('Sort Field #', i),choices = fields,multiple = FALSE,
                           selected = ifelse(length(users[[i]]$sortField)>0,users[[i]]$sortField,'model'))
       )})),
   fluidRow(
     lapply(1:length(users), function(i) {
-      column(2,
+      column(4,
              selectizeInput(paste0('reportCriteria', i), paste0('Report Criteria #', i),multiple = TRUE,choices = setNames(fields,fields),
                          selected = users[[i]]$reportCriteria, options = list(maxItems = 6))
       )})),
@@ -154,16 +163,25 @@ ui <- fluidPage(
       })),
   fluidRow(
     lapply(1:length(users), function(i) {
-      column(2,
+      column(4,
              inputTextarea(paste0('filterCriteria', i),
              ifelse(length(users[[i]]$filterCriteria)>0,users[[i]]$filterCriteria,"intRate >= 16 & ( grade == 'C' | grade == 'D' | grade == 'E') & delinq2Yrs <= 0 & model >= .85")
-             ,20,35 )
-      )}))),
+             ,20,60 )
+      )}))
+  ,br(),
+  fluidRow(
+    lapply(1:length(users), function(i) {
+      if (length(users) > 1) 
+        column(4,checkboxInput(paste0('remove', i), paste0('User #', i, ' selected for removal'),FALSE))
+      }))
+  
+  ),
     br(),
   wellPanel(
       fluidRow(
         column(5,
                actionButton('save', 'Save'),
+               actionButton('remove', 'Remove Selected User(s)'),
                actionButton('add', 'Add User'),
                actionButton("help", "Help")
         ),
@@ -199,18 +217,15 @@ server <- function(input, output, session) {
             lc$email <<- paste0(inputs[[paste0('email', i)]])
             lc$accID <<- paste0(inputs[[paste0('accID', i)]])
             lc$token <<- paste0(inputs[[paste0('token', i)]])
-            lc$maxNotesPerOrder <<- paste0(inputs[[paste0('maxNotesPerOrder', i)]])
-            lc$minCash <<- paste0(inputs[[paste0('minCash', i)]])
+            lc$maxNotesPerOrder <<- as.numeric(paste0(inputs[[paste0('maxNotesPerOrder', i)]]))
+            lc$minCash <<- as.numeric(paste0(inputs[[paste0('minCash', i)]]))
             lc$portfolioId <<- paste0(inputs[[paste0('portfolioId', i)]])
-            lc$amountPerNote <<- paste0(inputs[[paste0('amountPerNote', i)]])
+            lc$amountPerNote <<- as.numeric(paste0(inputs[[paste0('amountPerNote', i)]]))
             lc$sortField <<- paste0(inputs[[paste0('sortField', i)]])
             lc$reportCriteria <<- inputs[[paste0('reportCriteria', i)]]
             lc$filterCriteria <<- inputs[[paste0('filterCriteria', i)]]
             newusers <- append(newusers,lc)
-#            output$console <- renderPrint(newusers)
         })
-
-#      output$console <- renderPrint(users)
       save(users,file='/home/user/cpls/store/users.rda')
 
       
@@ -220,6 +235,53 @@ server <- function(input, output, session) {
                   append = FALSE)
       
     }
+    if(input$remove > buttonRemoveValue) {
+      inputs <- reactiveValuesToList(input)
+      buttonRemoveValue <<- input$remove
+      
+      closeAlert(session, alertId="a1")
+      if (length(users)>1){
+      inputs <- reactiveValuesToList(input)
+      newusers=list()
+      lc=list()
+      users <- lapply(1:length(users), function(i) {
+        lc$name <<- paste0(inputs[[paste0('name', i)]])
+        lc$email <<- paste0(inputs[[paste0('email', i)]])
+        lc$accID <<- paste0(inputs[[paste0('accID', i)]])
+        lc$token <<- paste0(inputs[[paste0('token', i)]])
+        lc$maxNotesPerOrder <<- as.numeric(paste0(inputs[[paste0('maxNotesPerOrder', i)]]))
+        lc$minCash <<- as.numeric(paste0(inputs[[paste0('minCash', i)]]))
+        lc$portfolioId <<- paste0(inputs[[paste0('portfolioId', i)]])
+        lc$amountPerNote <<- as.numeric(paste0(inputs[[paste0('amountPerNote', i)]]))
+        lc$sortField <<- paste0(inputs[[paste0('sortField', i)]])
+        lc$reportCriteria <<- inputs[[paste0('reportCriteria', i)]]
+        lc$filterCriteria <<- inputs[[paste0('filterCriteria', i)]]
+        if (inputs[[paste0('remove',i)]]) {
+          lc<- NULL
+          }
+        newusers <- append(newusers,lc)
+      })
+#      output$console <- renderPrint(print(paste0(length(users))))
+      count=0
+      for(i in 1:length(users)){
+        if(length(users[[i]]) == 0) count=count+1
+      }
+      while(count>0){
+      for(i in 1:length(users)){
+        if(length(users[[i]]) == 0) { 
+          users[[i]]<-NULL
+          count = count - 1
+          break
+          }
+      }
+      }
+      if(length(users)>0)
+       save(users,file='/home/user/cpls/store/users.rda')
+      session$close()
+      js$reset()
+#      output$console('window.location.href = \'/accounts/#\';')
+    }
+}
     if(input$add > buttonAddValue) {
       
       buttonAddValue <<- input$add
@@ -262,18 +324,15 @@ server <- function(input, output, session) {
       lc$reportCriteria=c('id','intRate','grade','purpose','model')
       
       # Filter Criteria
-      lc$filterCriteria <- function (x)  {
-        filter(x,
+      lc$filterCriteria <- "
                intRate >= 16 &
                  ( grade == 'C' | grade == 'D' | grade == 'E') &
                  delinq2Yrs <= 0 &
-                 model >= .85
-        )
-      }
+                 model >= .85 "
       users <- append(users,list(lc))
       
       save(users,file='/home/user/cpls/store/users.rda')
-      stopApp()
+      session$close()
     }
   })
 }
