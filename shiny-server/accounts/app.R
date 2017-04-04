@@ -77,14 +77,15 @@ buttonSaveValue <- 0
 buttonAddValue <- 0
 buttonRemoveValue <- 0
 
-load('/home/user/cpls/store/users.rda')
-load('/home/user/cpls/store/fields.rda')
-
-
+if(!file.exists('store/users.rda')){
+  system(paste0('cp ',dir,'/data/users.rda ',dir,'/store'))
+}
+load('store/users.rda')
+load('store/fields.rda')
 
 inputTextarea <- function(inputId, value="", nrows, ncols) {
   tagList(
-    singleton(tags$head(tags$script(src = "/home/user/cpls/scripts/textarea.js"))),
+    singleton(tags$head(tags$script(src = "textarea.js"))),
     tags$textarea(id = inputId,
                   class = "inputtextarea",
                   rows = nrows,
@@ -226,7 +227,7 @@ server <- function(input, output, session) {
             lc$filterCriteria <<- inputs[[paste0('filterCriteria', i)]]
             newusers <- append(newusers,lc)
         })
-      save(users,file='/home/user/cpls/store/users.rda')
+      save(users,file='store/users.rda')
 
       
       createAlert(session, anchorId = "alert", alertId="a1", 
@@ -276,7 +277,7 @@ server <- function(input, output, session) {
       }
       }
       if(length(users)>0)
-       save(users,file='/home/user/cpls/store/users.rda')
+       save(users,file='store/users.rda')
       session$close()
       js$reset()
 #      output$console('window.location.href = \'/accounts/#\';')
@@ -331,7 +332,7 @@ server <- function(input, output, session) {
                  model >= .85 "
       users <- append(users,list(lc))
       
-      save(users,file='/home/user/cpls/store/users.rda')
+      save(users,file='store/users.rda')
       session$close()
     }
   })

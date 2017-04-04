@@ -174,6 +174,8 @@ while (1) {
         source('scripts/portfolioAlloc.R')  
       }
     }
+    # Get Invested Loans List for each user
+    source('scripts/getInvestedLoans.R')
     
     # Get platform note count    
     source('scripts/noteCount.R')
@@ -255,7 +257,7 @@ while (1) {
                          users[[i]]$minCash + users[[i]]$amountPerNote,' (stopping)',sep=''))
           break
         }
-        
+      
         # Filter loans based on user provided criteria
         users[[i]]$filteredLoans <- loans %>%
           arrange(desc(loans[[users[[i]]$sortField]])) %>%
@@ -279,6 +281,14 @@ while (1) {
         # Obtain filtered notes id's
         users[[i]]$filteredIds <- users[[i]]$filteredLoans$id
 
+        #Removing already invested in notes
+        users[[i]]$filteredIds <- users[[i]]$filteredIds[!(users[[i]]$filteredIds %in% users[[i]]$pre$loanIds)]
+        # If no notes after removal of already invested notes, then break
+        if (length(users[[i]]$filteredIds) < 1) {
+          info(log,paste('User (',users[[i]]$name,') - No remaining notes after removal of already invested notes',sep=""))
+          break
+        }
+        
         # If user specified grade or term allocation, get total notes in portfolio + filtered to do calcs
         if (exists('gradeAllocation', where=users[[i]]) | exists('termAllocation', where=users[[i]]) ) {
           if(is.null(users[[i]]$pre$portNoteCnt) | length(users[[i]]$pre$portNoteCnt) == 0 ) {
