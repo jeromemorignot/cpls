@@ -21,6 +21,11 @@ ui <- fluidPage(
 )
 server <- function(input, output, session) {
   
+  if(!file.exists('store/system.log')){
+    dir = paste0(Sys.getenv("HOME"),'/cpls')
+    system(paste0("touch ",dir,'/store/system.log'))
+  }
+  
   data <- reactiveFileReader(1000, 
                              session, 
                              'store/system.log',

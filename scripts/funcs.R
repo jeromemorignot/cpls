@@ -34,6 +34,7 @@ reqFile <- function(file) {
 
 #Is cpls Running
 cplsRunning <- function(){
+  dir = paste0(Sys.getenv("HOME"),'/cpls')
   processfile = paste0(dir,'/store/cpls.proc')
   if (file.exists(processfile)){
     fileConn<-file(processfile)
@@ -56,6 +57,7 @@ cplsRunning <- function(){
 #get cpls process ID
 getcplsPID <- function(){
   if(cplsRunning()){
+    dir = paste0(Sys.getenv("HOME"),'/cpls')
     processfile = paste0(dir,'/store/cpls.proc')
     if (file.exists(processfile)){
       fileConn<-file(processfile)
