@@ -12,43 +12,14 @@ library(shinyTime)
 library(shinyBS)
 
 # Function to set home directory
-defaultDir = '/home/user/cpls'
-csf <- function() {
-  cmdArgs = commandArgs(trailingOnly = FALSE)
-  needle = "--file="
-  match = grep(needle, cmdArgs)
-  if (length(match) > 0) {
-    # Rscript via command line
-    return(normalizePath(sub(needle, "", cmdArgs[match])))
-  } else {
-    ls_vars = ls(sys.frames()[[1]])
-    if ("fileName" %in% ls_vars) {
-      # Source'd via RStudio
-      return(normalizePath(sys.frames()[[1]]$fileName)) 
-    } else {
-      if (!is.null(sys.frames()[[1]]$ofile)) {
-        # Source'd via R console
-        return(normalizePath(sys.frames()[[1]]$ofile))
-      } else {
-        # RStudio Run Selection
-        return(normalizePath(rstudioapi::getActiveDocumentContext()$path))
-      }
-    }
-  }
-}
-dir <- tryCatch(dirname(csf()),
-                error = function(e) {
-                  defaultDir
-                }
-)
-if (is.null(dir) | length(dir) == 0) {
-  dir <- defaultDir
-}
+dir = paste0(Sys.getenv("HOME"),'/cpls')
+
 if(!dir.exists(dir)) {
   err('Unable to determine home directory')
 } else {
   setwd(dir)
 }
+
 startTimes <- list()
 if (file.exists('store/startTimes.rda')) {
   load('store/startTimes.rda')
