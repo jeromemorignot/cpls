@@ -78,7 +78,7 @@ if(cplsRunning()){
 } else {
     info(log,'CPLS is not running - starting it')
     info(log,'---------------------------------------------------')
-    processfile='/home/user/cpls/store/cpls.proc'
+    processfile=paste0(dir,'/store/cpls.proc')
     fileConn<-file(processfile)
     writeLines(paste(Sys.getpid()), fileConn)
     close(fileConn)

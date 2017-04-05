@@ -34,7 +34,7 @@ reqFile <- function(file) {
 
 #Is cpls Running
 cplsRunning <- function(){
-  processfile='/home/user/cpls/store/cpls.proc'
+  processfile = paste0(dir,'/store/cpls.proc')
   if (file.exists(processfile)){
     fileConn<-file(processfile)
     PID <- readLines(fileConn)
@@ -56,7 +56,7 @@ cplsRunning <- function(){
 #get cpls process ID
 getcplsPID <- function(){
   if(cplsRunning()){
-    processfile='/home/user/cpls/store/cpls.proc'
+    processfile = paste0(dir,'/store/cpls.proc')
     if (file.exists(processfile)){
       fileConn<-file(processfile)
       PID <- readLines(fileConn)

@@ -10,6 +10,7 @@
 library(shiny)
 library(shinyBS)
 library(gtools)
+library(mailR)
 
 # Function to set home directory
 dir = paste0(Sys.getenv("HOME"),'/cpls')
@@ -40,6 +41,7 @@ Blablabla
 }
 
 buttonSaveValue <- 0
+buttonTestEmailValue <- 0
 
 if(!file.exists('store/config.rda')){
   system(paste0('cp ',dir,'/data/config.rda ',dir,'/store'))
@@ -105,6 +107,15 @@ ui <- fluidPage(
   ),
   
   fluidRow(
+    column(4,
+           textInput('testemailaddress', 'Email Address for testing configuration', 'youremail@gmail.com'),
+           bsTooltip(id = "testemailaddress", title = "Email Address for testing SMTP configuration", 
+                     placement = "bottom", trigger = "hover")
+           
+    ),
+    column(4, br(), actionButton('test', 'Send Test Email') )
+  ),
+  fluidRow(
     column(5,
            actionButton('save', 'Save'),
            actionButton("help", "Help")
@@ -162,8 +173,41 @@ server <- function(input, output, session) {
                   append = FALSE)
       
     }
+    if(input$test > buttonTestEmailValue){
+      
+      buttonTestEmailValue <<- input$test
+      
+      currentconfig <- reactiveValuesToList(input)
+      
+      if (exists('receipt')) rm(receipt)
+      
+      closeAlert(session, alertId="a1")
+      
+      tryCatch({
+        receipt <- send.mail(from = currentconfig$mailFrom,
+                             to = currentconfig$testemailaddress,
+                             # cc = c('jmrpublic@gmail.com'),
+                             subject = "PLS8 Test Message",
+                             body = "This is just a test message to confirm your configuration",
+                             html = TRUE,
+                             inline = TRUE,
+                             smtp = list(host.name = currentconfig$mailHost, port = currentconfig$mailPort, user.name = currentconfig$mailUserName, passwd = currentconfig$mailPassword, ssl = currentconfig$mailSSL),
+                             authenticate = TRUE,
+                             send = TRUE)
+        createAlert(session, anchorId = "alert", alertId="a1", 
+                    content="Email sent",
+                    style = "success",
+                    append = FALSE)},
+        error = function(e) {
+          createAlert(session, anchorId = "alert", alertId="a1", 
+                      content="Error sending the email",
+                      style = "danger",
+                      append = FALSE)}
+      )
+    }
   })
-}
+
+  }
 
 # Run the application 
 shinyApp(ui = ui, server = server)

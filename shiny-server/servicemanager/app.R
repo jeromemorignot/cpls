@@ -10,6 +10,7 @@
 library(shiny)
 library(shinyTime)
 library(shinyBS)
+library(log4r)
 
 # Function to set home directory
 dir = paste0(Sys.getenv("HOME"),'/cpls')
@@ -25,8 +26,12 @@ buttonStopValue <- 0
 buttonRunOnceValue <- 0
 buttonTestValue <- 0
 buttonRefreshValue <-0
+buttonCleanLogsValue <- 0
 
 source("scripts/funcs.R")
+
+logFile='store/system.log'
+log <- create.logger(level='INFO',logfile=logFile)
 
 # Define UI for application that draws a histogram
 ui <- fluidPage(
@@ -40,7 +45,8 @@ ui <- fluidPage(
             actionButton('stop', 'Stop PLS'),br(),br(),
             actionButton('runonce', 'Run PLS once'),br(),
             actionButton('test', 'Test PLS'),br(),br(),
-            actionButton('refresh','Refresh Status')
+            actionButton('refresh','Refresh Status'),
+            actionButton('cleanlogs', 'Clean Logs')
             ,width=2),
    mainPanel(
     h2("Service State"), 
@@ -84,6 +90,14 @@ observe({
     output$status <- renderText("Starting : Testing")
     system(paste("Rscript ",dir,"/cpls.R test",sep=''),wait=FALSE)
     output$runningoncestate <- renderText("Test Completed - Check Logs for Results")
+  }
+  if (input$cleanlogs > buttonCleanLogsValue){ 
+    buttonCleanLogsValue <<- input$cleanlogs
+    output$status <- renderText("Cleaning logs")
+    system(paste("cat /dev/null > ",dir,"/store/system.log",sep=''),wait=FALSE)
+#    system("rm -f /var/log/shiny-server/*",wait=FALSE)
+    info(log,'Logs were initialized')
+    output$runningoncestate <- renderText("Logs cleaned successfully - Check Logs for Results")
   }
   if (input$stop > buttonStopValue){ 
     buttonStopValue <<- input$stop
