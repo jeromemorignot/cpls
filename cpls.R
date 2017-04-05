@@ -107,8 +107,8 @@ showWait=T
 while (1) {
   if(file.exists('store/killcpls.proc')){
   info(log,'Stop request received. Stopping ...')  
-  system('rm -f /home/user/cpls/store/cpls.proc')
-  system('rm -f /home/user/cpls/store/killcpls.proc')
+  system(paste0('rm -f ', dir, '/store/cpls.proc'))
+  system(paste0('rm -f ', dir, '/store/killcpls.proc'))
   q()
   }
   # Show waiting status once when waiting
@@ -398,7 +398,7 @@ while (1) {
             break
           }
           if ( ! grep("orderInstructId",users[[i]]$resultOrderJSON) ) {
-            err(paste('User (',users[[i]]$name,') - Order Error (Invalid API Resposne)',sep=""))
+            err(paste('User (',users[[i]]$name,') - Order Error (Invalid API Response)',sep=""))
             err(paste('User (',users[[i]]$name,') - API Response: ', users[[i]]$resultOrderJSON,sep=''))
             break
           }

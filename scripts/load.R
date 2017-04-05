@@ -11,6 +11,10 @@ reqFile(scheduledtimes)
 
 info(log,'Importing configuration')
 
+if(!file.exists(globalconfig) | !file.exists(scheduledtimes)){
+  err('Configuration not available')
+}
+
 load(globalconfig)
 load(scheduledtimes)
 
@@ -29,7 +33,7 @@ checkConfig()
 
 # Error if user name is not updated (indication that config.R not updated correctly)
 if(userName=='user@domain.com') {
-  err('Default user name not updated in config.R')
+  err('Default user name not updated in configuration')
 }
 
 # Load all users from store sub-directory (must end with .acc extension)
@@ -38,34 +42,11 @@ users <- list()
 ls <- read.csv('data/loans_sample.csv')
 #files <- sort(list.files(path="store", pattern="*.acc", full.names=T, recursive=FALSE))
 useraccounts <- 'store/users.rda'
+if(!file.exists(useraccounts)){
+  err('No user account configuration available')
+}
 load(useraccounts)
 
-#for (file in files) {
-
-  # Error if default user file exists
-#  if (grepl("user_name.acc",file)) {
-#    err('Default file "store/user_name.acc" exists')
-#  }
-  
-#  lc=list()
-#  source(file)
-#  checkUser(file,lc)
-  
-  # Check filter syntax
-#  res <- tryCatch({
-#    ls %>% lc$filterCriteria()
-#  }, error = function(e) {
-#    err(paste('User (',lc$name,') - Filter error',sep=''))
-#  })
-  
-  # Error if name is not configured (inidication that file was not updated)
-#  if (lc$name == "FirstName LastName") {
-#    err(paste('User name not configured in file:',file))
-#  }
-  
-#  users <- append(users,list(lc))
-#  info(log,paste("Importing user: ",lc$name,sep=''))
-#}
 for(userid in 1:length(users)){
   
   #Check Filter Criteria
