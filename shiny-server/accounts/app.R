@@ -131,7 +131,7 @@ ui <- fluidPage(
       )})),
   fluidRow(
     lapply(1:length(users), function(i) {
-      HTML(paste0('<b>Customer Filter for User #', i,"</b>"))
+      HTML(paste0('<b>Customer Filter for User #', i,"</b> <br><i><small> (For experts only, this is an advanced feature, the Filter Editor should be used in most cases)</i></small>"))
       })),
   fluidRow(
     lapply(1:length(users), function(i) {
@@ -182,8 +182,12 @@ server <- function(input, output, session) {
       closeAlert(session, alertId="a1")
     
       inputs <- reactiveValuesToList(input)
+      
+      load('store/users.rda')
+      
       newusers=list()
       lc=list()
+      
       users <- lapply(1:length(users), function(i) {
             lc$name <<- paste0(inputs[[paste0('name', i)]])
             lc$email <<- paste0(inputs[[paste0('email', i)]])
@@ -196,6 +200,7 @@ server <- function(input, output, session) {
             lc$sortField <<- paste0(inputs[[paste0('sortField', i)]])
             lc$reportCriteria <<- inputs[[paste0('reportCriteria', i)]]
             lc$filterCriteria <<- inputs[[paste0('filterCriteria', i)]]
+            lc$filter <<- users[[i]]$filter
             newusers <- append(newusers,lc)
         })
       save(users,file='store/users.rda')
@@ -212,7 +217,9 @@ server <- function(input, output, session) {
       buttonRemoveValue <<- input$remove
       
       closeAlert(session, alertId="a1")
+      load('store/users.rda')
       if (length(users)>1){
+        
       inputs <- reactiveValuesToList(input)
       newusers=list()
       lc=list()
@@ -228,6 +235,7 @@ server <- function(input, output, session) {
         lc$sortField <<- paste0(inputs[[paste0('sortField', i)]])
         lc$reportCriteria <<- inputs[[paste0('reportCriteria', i)]]
         lc$filterCriteria <<- inputs[[paste0('filterCriteria', i)]]
+        lc$filter <<- users[[i]]$filter
         if (inputs[[paste0('remove',i)]]) {
           lc<- NULL
           }
@@ -301,6 +309,9 @@ server <- function(input, output, session) {
                  ( grade == 'C' | grade == 'D' | grade == 'E') &
                  delinq2Yrs <= 0 &
                  model >= .85 "
+      
+      lc$filter <- list()
+      
       users <- append(users,list(lc))
       
       save(users,file='store/users.rda')
