@@ -27,6 +27,7 @@ buttonRunOnceValue <- 0
 buttonTestValue <- 0
 buttonRefreshValue <-0
 buttonCleanLogsValue <- 0
+buttonShutdownServerValue <- 0
 
 source("scripts/funcs.R")
 
@@ -46,7 +47,9 @@ ui <- fluidPage(
             actionButton('runonce', 'Run PLS once'),br(),
             actionButton('test', 'Test PLS'),br(),br(),
             actionButton('refresh','Refresh Status'),
-            actionButton('cleanlogs', 'Clean Logs')
+            actionButton('cleanlogs', 'Clean Logs'),
+            br(),
+            actionButton('shutdownserver', 'Shutdown Server')
             ,width=2),
    mainPanel(
     h2("Service State"), 
@@ -99,6 +102,19 @@ observe({
     info(log,'Logs were initialized')
     output$runningoncestate <- renderText("Logs cleaned successfully - Check Logs for Results")
   }
+  if (input$shutdownserver > buttonShutdownServerValue){ 
+    buttonShutdownServerValue <<- input$shutdownserver
+    if(cplsRunning()){
+      output$status <- renderText("Stopping")
+      system(paste("touch ",dir,"/store/killcpls.proc",sep = ''))
+    }
+    output$status <- renderText("Shutting Down Server")
+    Sys.sleep(30)
+    info(log,'Shutting Down Server')
+    system("/sbin/reboot")
+  }
+  
+  
   if (input$stop > buttonStopValue){ 
     buttonStopValue <<- input$stop
     if(cplsRunning()){
