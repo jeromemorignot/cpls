@@ -107,11 +107,11 @@ observe({
     if(cplsRunning()){
       output$status <- renderText("Stopping")
       system(paste("touch ",dir,"/store/killcpls.proc",sep = ''))
+      Sys.sleep(30)
     }
     output$status <- renderText("Shutting Down Server")
-    Sys.sleep(30)
     info(log,'Shutting Down Server')
-    system("/sbin/reboot")
+    system("sudo /sbin/shutdown now")
   }
   
   
