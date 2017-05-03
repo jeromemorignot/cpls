@@ -49,13 +49,16 @@ ui <- fluidPage(
             actionButton('refresh','Refresh Status'),
             actionButton('cleanlogs', 'Clean Logs'),
             br(),
-            actionButton('shutdownserver', 'Shutdown Server')
+            actionButton('shutdownserver', 'Shutdown Server'),br(),
+            actionButton('updatepls', 'Update PLS')
             ,width=2),
    mainPanel(
     h2("Service State"), 
     textOutput("status"),br(),
     h2("Running Once/Test State"),
-    textOutput("runningoncestate")
+    textOutput("runningoncestate"),
+    h2("Patch Level"),
+    textOutput("patchlevel")
    )
    
    )
