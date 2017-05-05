@@ -1,4 +1,13 @@
-
+# function to get the installed GIT Version
+getGitStatus <- function() {
+  gitlocal <- system2(command = "git",args = "rev-parse @", stdout = TRUE)
+  gitremote <- system2(command = "git", args = "rev-parse @{u}", stdout = TRUE)
+  gitbase <- system2(command = "git", args = "merge-base @ @{u}", stdout = TRUE)
+  if (gitlocal == gitremote) return("Up to date")
+  else if (gitlocal == gitbase) return("Need to pull")
+  else if (gitremote == gitbase) return("Need to push")
+  else return("Diverged")
+}
 # Helper function to view structures in RStudio window
 more <- function(x) {
   file <- tempfile()

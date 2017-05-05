@@ -28,6 +28,8 @@ buttonTestValue <- 0
 buttonRefreshValue <-0
 buttonCleanLogsValue <- 0
 buttonShutdownServerValue <- 0
+buttonCheckVersionValue <- 0
+buttonUpdatePLSValue <- 0
 
 source("scripts/funcs.R")
 
@@ -48,16 +50,17 @@ ui <- fluidPage(
             actionButton('test', 'Test PLS'),br(),br(),
             actionButton('refresh','Refresh Status'),
             actionButton('cleanlogs', 'Clean Logs'),
-            br(),
-            actionButton('shutdownserver', 'Shutdown Server'),br(),
-            actionButton('updatepls', 'Update PLS')
+            br(),br(),
+            actionButton('checkversion', 'Check Version'),
+            actionButton('updatepls', 'Update PLS'),br(),br(),
+            actionButton('shutdownserver', 'Shutdown Server')
             ,width=2),
    mainPanel(
     h2("Service State"), 
     textOutput("status"),br(),
     h2("Running Once/Test State"),
-    textOutput("runningoncestate"),
-    h2("Patch Level"),
+    textOutput("runningoncestate"),br(),br(),
+    h2("Update Status"),
     textOutput("patchlevel")
    )
    
@@ -124,6 +127,11 @@ observe({
       output$status <- renderText("Stopping")
       system(paste("touch ",dir,"/store/killcpls.proc",sep = ''))
     }}
+  
+  if (input$checkversion > buttonCheckVersionValue){ 
+    buttonCheckVersionValue <<- input$checkversion
+    output$patchlevel <- renderText(paste0(getGitStatus()))
+  }
 })
   
   observe({
