@@ -132,6 +132,16 @@ observe({
     buttonCheckVersionValue <<- input$checkversion
     output$patchlevel <- renderText(paste0(getGitStatus()))
   }
+  
+  if (input$updatepls > buttonUpdatePLSValue){ 
+    buttonUpdatePLSValue <<- input$updatepls
+    if (getGitStatus() == "Update Available"){
+      status <- system("git pull")
+      if(status == 0) {
+        output$patchlevel <- renderText("Update Successful - Restart Recommended")
+      }
+    } else { output$patchlevel <- renderText("Up to date - Nothing to do") }
+  }
 })
   
   observe({

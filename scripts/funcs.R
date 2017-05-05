@@ -4,7 +4,7 @@ getGitStatus <- function() {
   gitremote <- system2(command = "git", args = "rev-parse @{u}", stdout = TRUE)
   gitbase <- system2(command = "git", args = "merge-base @ @{u}", stdout = TRUE)
   if (gitlocal == gitremote) return("Up to date")
-  else if (gitlocal == gitbase) return("Need to pull")
+  else if (gitlocal == gitbase) return("Update Available")
   else if (gitremote == gitbase) return("Need to push")
   else return("Diverged")
 }
